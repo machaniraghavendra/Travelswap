@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16
+    container_name: travelswap-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: travelswap
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - travelswap_pg_data:/var/lib/postgresql/data
+volumes:
+  travelswap_pg_data:
