@@ -1,6 +1,6 @@
 import { clearTokens, getAccessToken, getRefreshToken, setTokens } from './authStorage';
 
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = 'https://travelswap.onrender.com/api';
 let refreshInFlight = null;
 
 async function parseError(response) {
