@@ -124,6 +124,7 @@ export const api = {
   updatePrice: (id, price) => request(`/listings/${id}/price`, { method: 'PATCH', body: JSON.stringify({ resalePrice: price }) }),
   revokeListing: (id) => request(`/listings/${id}`, { method: 'DELETE' }),
   getJourneys: (query = '') => request(`/journeys${query}`),
+  getJourneyLocations: () => request('/journeys/locations'),
   getJourneySeats: (journeyId) => request(`/journeys/${journeyId}/seats`),
   bookJourneySeat: (journeyId, body = {}) => request(`/journeys/${journeyId}/book`, { method: 'POST', body: JSON.stringify(body) }),
 
