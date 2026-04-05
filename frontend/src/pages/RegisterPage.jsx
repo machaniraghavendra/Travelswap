@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
+import AuthCursorShell from '../components/AuthCursorShell';
 
 export default function RegisterPage({ accountType = 'USER' }) {
   const navigate = useNavigate();
@@ -104,7 +105,7 @@ export default function RegisterPage({ accountType = 'USER' }) {
   };
 
   return (
-    <div className="auth-shell">
+    <AuthCursorShell>
       <section className="auth-card">
         <p className="tag">TravelSwap Access</p>
         <h1>{isTravel ? 'Travel Operator Sign Up' : 'User Sign Up'}</h1>
@@ -168,6 +169,6 @@ export default function RegisterPage({ accountType = 'USER' }) {
           Switch sign up: <Link to={altRegisterPath}>{isTravel ? 'User Sign Up' : 'Travel Sign Up'}</Link>
         </p>
       </section>
-    </div>
+    </AuthCursorShell>
   );
 }

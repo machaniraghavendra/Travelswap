@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
+import AuthCursorShell from '../components/AuthCursorShell';
 
 export default function LoginPage({ accountType = 'USER' }) {
   const navigate = useNavigate();
@@ -69,7 +70,7 @@ export default function LoginPage({ accountType = 'USER' }) {
   };
 
   return (
-    <div className="auth-shell">
+    <AuthCursorShell>
       <section className="auth-card">
         <p className="tag">TravelSwap Access</p>
         <h1>{title}</h1>
@@ -117,6 +118,6 @@ export default function LoginPage({ accountType = 'USER' }) {
           Forgot password? <Link to="/forgot-password">Reset here</Link>
         </p>
       </section>
-    </div>
+    </AuthCursorShell>
   );
 }

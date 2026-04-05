@@ -49,16 +49,75 @@ p {
   display: grid;
   place-items: center;
   padding: 20px;
+  position: relative;
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.58), rgba(15, 23, 42, 0.58)),
+    url('https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=1800&q=80');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  animation: authBgDrift 18s ease-in-out infinite alternate;
+}
+
+.auth-shell::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(circle at var(--cursor-x, 20%) var(--cursor-y, 25%), rgba(19, 111, 206, 0.30), transparent 42%),
+    radial-gradient(circle at calc(100% - var(--cursor-x, 78%)) calc(100% - var(--cursor-y, 70%)), rgba(17, 126, 139, 0.24), transparent 42%);
+  filter: blur(12px);
+  animation: authGlowDrift 14s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.interactive-auth {
+  --cursor-x: 50%;
+  --cursor-y: 50%;
+}
+
+.cursor-bus {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.8rem;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 0;
+  transition: left 120ms linear, top 120ms linear, transform 160ms ease-out;
+  filter: drop-shadow(0 6px 8px rgba(15, 23, 42, 0.35));
+}
+
+.cursor-bus[data-dir='right'] {
+  transform: translate(-50%, -50%) scaleX(1) rotate(0deg);
+}
+
+.cursor-bus[data-dir='left'] {
+  transform: translate(-50%, -50%) scaleX(-1) rotate(0deg);
+}
+
+.cursor-bus[data-dir='up'] {
+  transform: translate(-50%, -50%) scaleX(1) rotate(-18deg);
+}
+
+.cursor-bus[data-dir='down'] {
+  transform: translate(-50%, -50%) scaleX(1) rotate(18deg);
 }
 
 .auth-card {
   width: min(520px, 94vw);
   border-radius: 24px;
-  background: linear-gradient(125deg, #fef4de, #fff7ed 45%, #e8f4f4 100%);
-  border: 1px solid #e7dac4;
-  box-shadow: 0 14px 40px rgba(27, 36, 56, 0.09);
+  background: rgba(255, 250, 242, 0.95);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(231, 218, 196, 0.9);
+  box-shadow: 0 16px 44px rgba(15, 23, 42, 0.26);
   padding: 28px;
-  animation: fadeUp 350ms ease-out;
+  animation: fadeUp 350ms ease-out, authCardFloat 6s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
 }
 
 .auth-copy {
@@ -735,6 +794,33 @@ button:disabled {
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+@keyframes authBgDrift {
+  0% {
+    background-position: center;
+  }
+  100% {
+    background-position: center 8%;
+  }
+}
+
+@keyframes authGlowDrift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(2%, -2%, 0) scale(1.04);
+  }
+}
+
+@keyframes authCardFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
   }
 }
 
