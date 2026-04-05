@@ -50,6 +50,7 @@ export default function UserDashboardPage() {
   const [purchases, setPurchases] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [alerts, setAlerts] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [popupNotification, setPopupNotification] = useState(null);
   const [busyKey, setBusyKey] = useState('');
   const [message, setMessage] = useState('');
@@ -69,7 +70,7 @@ export default function UserDashboardPage() {
   );
 
   const refreshDashboard = useCallback(async () => {
-    const [dashboardData, journeyData, ticketsData, listingData, sellerData, purchaseData, sessionData, unreadAlerts] = await Promise.all([
+    const [dashboardData, journeyData, ticketsData, listingData, sellerData, purchaseData, sessionData, unreadAlerts, locationsData] = await Promise.all([
       api.getMyDashboard(),
       hasJourneySearch ? api.getJourneys(journeyQuery) : Promise.resolve([]),
       api.getMyTickets(),
@@ -77,7 +78,8 @@ export default function UserDashboardPage() {
       api.getMyListings(),
       api.getMyPurchases(),
       api.sessions(),
-      api.getMyNotifications(true, 30)
+      api.getMyNotifications(true, 30),
+      api.getJourneyLocations()
     ]);
 
     setDashboard(dashboardData);
@@ -88,6 +90,7 @@ export default function UserDashboardPage() {
     setPurchases(purchaseData);
     setSessions(sessionData);
     setAlerts(unreadAlerts);
+    setLocations(locationsData || []);
 
     const nextPopup = unreadAlerts.find((notification) => notification.category === 'SELLER_REFUND');
     if (nextPopup) {
@@ -209,6 +212,7 @@ export default function UserDashboardPage() {
             onPurchase={onPurchase}
             busyKey={busyKey}
             userId={user.id}
+            locationOptions={locations}
           />
           <MyResellingTickets
             listings={sellerTrail.filter((item) => item.status === 'AVAILABLE')}
@@ -223,6 +227,7 @@ export default function UserDashboardPage() {
             filters={journeyFilters}
             setFilters={setJourneyFilters}
             onLoadSeatPlan={api.getJourneySeats}
+            locationOptions={locations}
           />
           <MyTicketsPanel tickets={tickets} />
           <ListingForm onCreate={onCreateListing} busy={busyKey === 'create'} tickets={tickets} />

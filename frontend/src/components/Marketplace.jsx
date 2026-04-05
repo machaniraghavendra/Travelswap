@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { TRAVEL_LOCATIONS } from '../constants/locations';
 
 function money(value) {
   return Number(value || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
@@ -19,7 +20,8 @@ export default function Marketplace({
   setFilters,
   onPurchase,
   busyKey,
-  userId
+  userId,
+  locationOptions = []
 }) {
   const [buyers, setBuyers] = useState({});
   const [buyModal, setBuyModal] = useState(null);
@@ -30,6 +32,12 @@ export default function Marketplace({
     () => listings.filter((listing) => listing.status === 'AVAILABLE' && listing.sellerId !== userId),
     [listings, userId]
   );
+  const locations = useMemo(
+    () => Array.from(new Set([...TRAVEL_LOCATIONS, ...locationOptions].map((value) => (value || '').trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b)),
+    [locationOptions]
+  );
+  const fromOptions = useMemo(() => locations.filter((location) => location !== filters.routeTo), [locations, filters.routeTo]);
+  const toOptions = useMemo(() => locations.filter((location) => location !== filters.routeFrom), [locations, filters.routeFrom]);
 
   const handlePurchase = async () => {
     if (!buyModal) {
@@ -59,16 +67,24 @@ export default function Marketplace({
       </div>
 
       <div className="filters">
-        <input
-          placeholder="Filter from city"
+        <select
           value={filters.routeFrom}
-          onChange={(event) => setFilters((prev) => ({ ...prev, routeFrom: event.target.value }))}
-        />
-        <input
-          placeholder="Filter to city"
+          onChange={(event) => setFilters((prev) => ({ ...prev, routeFrom: event.target.value, routeTo: prev.routeTo === event.target.value ? '' : prev.routeTo }))}
+        >
+          <option value="">From city</option>
+          {fromOptions.map((location) => (
+            <option key={`resale-from-${location}`} value={location}>{location}</option>
+          ))}
+        </select>
+        <select
           value={filters.routeTo}
-          onChange={(event) => setFilters((prev) => ({ ...prev, routeTo: event.target.value }))}
-        />
+          onChange={(event) => setFilters((prev) => ({ ...prev, routeTo: event.target.value, routeFrom: prev.routeFrom === event.target.value ? '' : prev.routeFrom }))}
+        >
+          <option value="">To city</option>
+          {toOptions.map((location) => (
+            <option key={`resale-to-${location}`} value={location}>{location}</option>
+          ))}
+        </select>
         <input
           type="date"
           value={filters.journeyDate || ''}

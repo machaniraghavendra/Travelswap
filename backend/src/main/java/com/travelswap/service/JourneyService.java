@@ -197,6 +197,19 @@ public class JourneyService {
     }
 
     @Transactional
+    public List<String> availableLocations() {
+        return java.util.stream.Stream.concat(
+                        journeyRepository.findDistinctRouteFrom().stream(),
+                        journeyRepository.findDistinctRouteTo().stream()
+                )
+                .map(value -> value == null ? "" : value.trim())
+                .filter(value -> !value.isBlank())
+                .distinct()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
+    }
+
+    @Transactional
     public List<UserTicketResponse> bookSeat(Long journeyId, BookSeatRequest request) {
         UserEntity currentUser = currentUserService.requireCurrentUser();
         ensureRole(currentUser, UserRole.USER, "Only user accounts can book seats");

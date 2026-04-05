@@ -35,4 +35,10 @@ public interface JourneyRepository extends JpaRepository<JourneyEntity, Long> {
             LocalDateTime to,
             JourneyStatus status
     );
+
+    @Query("select distinct journey.routeFrom from JourneyEntity journey where journey.routeFrom is not null and trim(journey.routeFrom) <> ''")
+    List<String> findDistinctRouteFrom();
+
+    @Query("select distinct journey.routeTo from JourneyEntity journey where journey.routeTo is not null and trim(journey.routeTo) <> ''")
+    List<String> findDistinctRouteTo();
 }

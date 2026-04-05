@@ -39,6 +39,12 @@ public class JourneyController {
         return journeyService.openJourneys(routeFrom, routeTo, journeyDate);
     }
 
+    @GetMapping("/journeys/locations")
+    @PreAuthorize("hasAnyRole('USER','TRAVEL','ADMIN')")
+    public List<String> locations() {
+        return journeyService.availableLocations();
+    }
+
     @GetMapping("/journeys/{journeyId}/seats")
     @PreAuthorize("hasRole('USER')")
     public JourneySeatResponse seatPlan(@PathVariable Long journeyId) {

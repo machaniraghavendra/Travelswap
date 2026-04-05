@@ -6,6 +6,8 @@ import TravelDashboardPage from './pages/TravelDashboardPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import { ThemeProvider } from './ThemeContext';
+import ThemeSwitcher from './components/ThemeSwitcher';
 
 function AuthGate({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -62,20 +64,23 @@ export default function App() {
   }
 
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<AuthGate><RoleDashboard /></AuthGate>} />
-          <Route path="/travel/dashboard" element={<AuthGate><TravelOnlyDashboard /></AuthGate>} />
-          <Route path="/login" element={<PublicGate><LoginPage accountType="USER" /></PublicGate>} />
-          <Route path="/travel/login" element={<PublicGate><LoginPage accountType="TRAVEL" /></PublicGate>} />
-          <Route path="/register" element={<PublicGate><RegisterPage accountType="USER" /></PublicGate>} />
-          <Route path="/travel/register" element={<PublicGate><RegisterPage accountType="TRAVEL" /></PublicGate>} />
-          <Route path="/forgot-password" element={<PublicGate><ForgotPasswordPage /></PublicGate>} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <ThemeSwitcher />
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<AuthGate><RoleDashboard /></AuthGate>} />
+            <Route path="/travel/dashboard" element={<AuthGate><TravelOnlyDashboard /></AuthGate>} />
+            <Route path="/login" element={<PublicGate><LoginPage accountType="USER" /></PublicGate>} />
+            <Route path="/travel/login" element={<PublicGate><LoginPage accountType="TRAVEL" /></PublicGate>} />
+            <Route path="/register" element={<PublicGate><RegisterPage accountType="USER" /></PublicGate>} />
+            <Route path="/travel/register" element={<PublicGate><RegisterPage accountType="TRAVEL" /></PublicGate>} />
+            <Route path="/forgot-password" element={<PublicGate><ForgotPasswordPage /></PublicGate>} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

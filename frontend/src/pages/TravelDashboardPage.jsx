@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../AuthContext';
 import SessionPanel from '../components/SessionPanel';
+import { TRAVEL_LOCATIONS } from '../constants/locations';
 
 function dateTimeInput(value) {
   if (!value) return '';
@@ -60,6 +61,7 @@ export default function TravelDashboardPage() {
   const [journeys, setJourneys] = useState([]);
   const [travelOverview, setTravelOverview] = useState(null);
   const [sessions, setSessions] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [busyKey, setBusyKey] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -95,16 +97,18 @@ export default function TravelDashboardPage() {
   const [editForms, setEditForms] = useState({});
 
   const refresh = useCallback(async () => {
-    const [travelData, journeyData, overviewData, sessionData] = await Promise.all([
+    const [travelData, journeyData, overviewData, sessionData, locationData] = await Promise.all([
       api.getMyTravels(),
       api.getTravelJourneys(),
       api.getTravelOverview(),
-      api.sessions()
+      api.sessions(),
+      api.getJourneyLocations()
     ]);
     setTravels(travelData);
     setJourneys(journeyData);
     setTravelOverview(overviewData);
     setSessions(sessionData);
+    setLocations(locationData || []);
 
     if (!busForm.travelId && travelData.length > 0) {
       setBusForm((prev) => ({ ...prev, travelId: String(travelData[0].id) }));
@@ -140,6 +144,18 @@ export default function TravelDashboardPage() {
     const travel = travels.find((item) => String(item.id) === journeyForm.travelId);
     return travel?.buses || [];
   }, [travels, journeyForm.travelId]);
+  const routeOptions = useMemo(
+    () => Array.from(new Set([...TRAVEL_LOCATIONS, ...locations].map((value) => (value || '').trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b)),
+    [locations]
+  );
+  const createFromOptions = useMemo(
+    () => routeOptions.filter((location) => location !== journeyForm.routeTo),
+    [routeOptions, journeyForm.routeTo]
+  );
+  const createToOptions = useMemo(
+    () => routeOptions.filter((location) => location !== journeyForm.routeFrom),
+    [routeOptions, journeyForm.routeFrom]
+  );
 
   const bookedSeatsByBus = useMemo(() => {
     const totals = {};
@@ -174,6 +190,9 @@ export default function TravelDashboardPage() {
     if (!journeyForm.busId) nextErrors.busId = 'Select bus.';
     if (!journeyForm.routeFrom.trim()) nextErrors.routeFrom = 'From city is required.';
     if (!journeyForm.routeTo.trim()) nextErrors.routeTo = 'To city is required.';
+    if (journeyForm.routeFrom.trim() && journeyForm.routeTo.trim() && journeyForm.routeFrom.trim().toLowerCase() === journeyForm.routeTo.trim().toLowerCase()) {
+      nextErrors.routeTo = 'From and To cannot be same.';
+    }
     if (parseJourneyPoints(journeyForm.pickupPoints).length === 0) nextErrors.pickupPoints = 'Add pickup points as Point|YYYY-MM-DD|HH:mm.';
     if (parseJourneyPoints(journeyForm.droppingPoints).length === 0) nextErrors.droppingPoints = 'Add dropping points as Point|YYYY-MM-DD|HH:mm.';
     if (!['LOWER', 'UPPER', 'BOTH'].includes(journeyForm.preferredDeck)) nextErrors.preferredDeck = 'Choose lower, upper, or both.';
@@ -346,6 +365,13 @@ export default function TravelDashboardPage() {
       setEditForms((prev) => ({
         ...prev,
         [journeyId]: { ...form, error: 'All journey fields are required.' }
+      }));
+      return;
+    }
+    if (form.routeFrom.trim().toLowerCase() === form.routeTo.trim().toLowerCase()) {
+      setEditForms((prev) => ({
+        ...prev,
+        [journeyId]: { ...form, error: 'From and To cannot be same.' }
       }));
       return;
     }
@@ -567,12 +593,12 @@ export default function TravelDashboardPage() {
               </label>
               <label>
                 From
-                <input value={journeyForm.routeFrom} onChange={(event) => setJourneyForm((prev) => ({ ...prev, routeFrom: event.target.value }))} />
+                <input list="route-location-options-from-create" value={journeyForm.routeFrom} onChange={(event) => setJourneyForm((prev) => ({ ...prev, routeFrom: event.target.value, routeTo: prev.routeTo === event.target.value ? '' : prev.routeTo }))} />
                 {journeyErrors.routeFrom && <small className="field-error">{journeyErrors.routeFrom}</small>}
               </label>
               <label>
                 To
-                <input value={journeyForm.routeTo} onChange={(event) => setJourneyForm((prev) => ({ ...prev, routeTo: event.target.value }))} />
+                <input list="route-location-options-to-create" value={journeyForm.routeTo} onChange={(event) => setJourneyForm((prev) => ({ ...prev, routeTo: event.target.value, routeFrom: prev.routeFrom === event.target.value ? '' : prev.routeFrom }))} />
                 {journeyErrors.routeTo && <small className="field-error">{journeyErrors.routeTo}</small>}
               </label>
               <label>
@@ -615,6 +641,16 @@ export default function TravelDashboardPage() {
               {journeyErrors._form && <small className="field-error">{journeyErrors._form}</small>}
               <button type="submit" disabled={busyKey === 'journey-create'}>{busyKey === 'journey-create' ? 'Creating...' : 'Create Journey'}</button>
             </form>
+            <datalist id="route-location-options-from-create">
+              {createFromOptions.map((location) => (
+                <option key={`travel-route-from-${location}`} value={location} />
+              ))}
+            </datalist>
+            <datalist id="route-location-options-to-create">
+              {createToOptions.map((location) => (
+                <option key={`travel-route-${location}`} value={location} />
+              ))}
+            </datalist>
           </section>
         </section>
 
@@ -641,8 +677,18 @@ export default function TravelDashboardPage() {
                     )}
                     {edit && (
                       <div className="form-grid">
-                        <label>From<input value={edit.routeFrom} onChange={(event) => setEditForms((prev) => ({ ...prev, [journey.id]: { ...edit, routeFrom: event.target.value } }))} /></label>
-                        <label>To<input value={edit.routeTo} onChange={(event) => setEditForms((prev) => ({ ...prev, [journey.id]: { ...edit, routeTo: event.target.value } }))} /></label>
+                        <label>From<input list={`route-location-options-from-${journey.id}`} value={edit.routeFrom} onChange={(event) => setEditForms((prev) => ({ ...prev, [journey.id]: { ...edit, routeFrom: event.target.value, routeTo: edit.routeTo === event.target.value ? '' : edit.routeTo } }))} /></label>
+                        <label>To<input list={`route-location-options-to-${journey.id}`} value={edit.routeTo} onChange={(event) => setEditForms((prev) => ({ ...prev, [journey.id]: { ...edit, routeTo: event.target.value, routeFrom: edit.routeFrom === event.target.value ? '' : edit.routeFrom } }))} /></label>
+                        <datalist id={`route-location-options-from-${journey.id}`}>
+                          {routeOptions.filter((location) => location !== edit.routeTo).map((location) => (
+                            <option key={`edit-from-${journey.id}-${location}`} value={location} />
+                          ))}
+                        </datalist>
+                        <datalist id={`route-location-options-to-${journey.id}`}>
+                          {routeOptions.filter((location) => location !== edit.routeFrom).map((location) => (
+                            <option key={`edit-to-${journey.id}-${location}`} value={location} />
+                          ))}
+                        </datalist>
                         <label>Pickup<input value={edit.pickupPoints} onChange={(event) => setEditForms((prev) => ({ ...prev, [journey.id]: { ...edit, pickupPoints: event.target.value } }))} /></label>
                         <label>Dropping<input value={edit.droppingPoints} onChange={(event) => setEditForms((prev) => ({ ...prev, [journey.id]: { ...edit, droppingPoints: event.target.value } }))} /></label>
                         <label>
