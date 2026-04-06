@@ -20,6 +20,12 @@ function isoDate(value) {
   return new Date(value).toISOString().slice(0, 10);
 }
 
+function todayLocalDate() {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
 function pointLabel(item, fallbackDate = '') {
   if (typeof item === 'string') return item;
   const date = item?.date || fallbackDate;
@@ -169,6 +175,7 @@ export default function JourneyBoard({ journeys, onBook, busyKey, filters, setFi
   );
   const fromOptions = useMemo(() => locations.filter((location) => location !== filters.routeTo), [locations, filters.routeTo]);
   const toOptions = useMemo(() => locations.filter((location) => location !== filters.routeFrom), [locations, filters.routeFrom]);
+  const minJourneyDate = useMemo(() => todayLocalDate(), []);
   const swapRouteFilters = () => {
     setFilters((prev) => ({
       ...prev,
@@ -296,7 +303,12 @@ export default function JourneyBoard({ journeys, onBook, busyKey, filters, setFi
             ))}
           </select>
         </div>
-        <input type="date" value={filters.journeyDate || ''} onChange={(event) => setFilters((prev) => ({ ...prev, journeyDate: event.target.value }))} />
+        <input
+          type="date"
+          min={minJourneyDate}
+          value={filters.journeyDate || ''}
+          onChange={(event) => setFilters((prev) => ({ ...prev, journeyDate: event.target.value }))}
+        />
       </div>
 
       {!hasSearch && <p className="empty">Search using From, To, and Date to view available buses and seats.</p>}

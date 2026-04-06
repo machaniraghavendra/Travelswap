@@ -15,6 +15,12 @@ function dateTime(value) {
   });
 }
 
+function todayLocalDate() {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
 export default function Marketplace({
   listings,
   filters,
@@ -40,6 +46,7 @@ export default function Marketplace({
   );
   const fromOptions = useMemo(() => locations.filter((location) => location !== filters.routeTo), [locations, filters.routeTo]);
   const toOptions = useMemo(() => locations.filter((location) => location !== filters.routeFrom), [locations, filters.routeFrom]);
+  const minJourneyDate = useMemo(() => todayLocalDate(), []);
   const swapRouteFilters = () => {
     setFilters((prev) => ({
       ...prev,
@@ -97,6 +104,7 @@ export default function Marketplace({
         </div>
         <input
           type="date"
+          min={minJourneyDate}
           value={filters.journeyDate || ''}
           onChange={(event) => setFilters((prev) => ({ ...prev, journeyDate: event.target.value }))}
         />
