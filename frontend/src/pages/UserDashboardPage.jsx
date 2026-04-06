@@ -60,7 +60,8 @@ export default function UserDashboardPage() {
   const [resaleLoading, setResaleLoading] = useState(false);
   const [journeyFilters, setJourneyFilters] = useState({ routeFrom: '', routeTo: '', journeyDate: '' });
   const [resaleFilters, setResaleFilters] = useState({ routeFrom: '', routeTo: '', journeyDate: '' });
-  const refreshRunRef = useRef(0);
+  const searchRunRef = useRef(0);
+  const initialLoadDoneRef = useRef(false);
 
   const listingQuery = useMemo(() => buildListingQuery(resaleFilters), [resaleFilters]);
   const journeyQuery = useMemo(() => buildJourneyQuery(journeyFilters), [journeyFilters]);
@@ -73,42 +74,49 @@ export default function UserDashboardPage() {
     [resaleFilters.routeFrom, resaleFilters.routeTo, resaleFilters.journeyDate]
   );
 
-  const refreshDashboard = useCallback(async () => {
-    const runId = refreshRunRef.current + 1;
-    refreshRunRef.current = runId;
+  const loadBaseData = useCallback(async () => {
+    const [dashboardData, ticketsData, sellerData, purchaseData, sessionData, unreadAlerts, locationsData] = await Promise.all([
+      api.getMyDashboard(),
+      api.getMyTickets(),
+      api.getMyListings(),
+      api.getMyPurchases(),
+      api.sessions(),
+      api.getMyNotifications(true, 30),
+      api.getJourneyLocations()
+    ]);
 
+    setDashboard(dashboardData);
+    setTickets(ticketsData);
+    setSellerTrail(sellerData);
+    setPurchases(purchaseData);
+    setSessions(sessionData);
+    setAlerts(unreadAlerts);
+    setLocations(locationsData || []);
+
+    const nextPopup = unreadAlerts.find((notification) => notification.category === 'SELLER_REFUND');
+    if (nextPopup) {
+      setPopupNotification((current) => current || nextPopup);
+    }
+  }, []);
+
+  const loadSearchData = useCallback(async () => {
+    const runId = searchRunRef.current + 1;
+    searchRunRef.current = runId;
     setJourneyLoading(hasJourneySearch);
     setResaleLoading(hasResaleSearch);
 
     try {
-      const [dashboardData, journeyData, ticketsData, listingData, sellerData, purchaseData, sessionData, unreadAlerts, locationsData] = await Promise.all([
-        api.getMyDashboard(),
+      const [journeyData, listingData] = await Promise.all([
         hasJourneySearch ? api.getJourneys(journeyQuery) : Promise.resolve([]),
-        api.getMyTickets(),
-        hasResaleSearch ? api.getListings(listingQuery) : Promise.resolve([]),
-        api.getMyListings(),
-        api.getMyPurchases(),
-        api.sessions(),
-        api.getMyNotifications(true, 30),
-        api.getJourneyLocations()
+        hasResaleSearch ? api.getListings(listingQuery) : Promise.resolve([])
       ]);
 
-      setDashboard(dashboardData);
-      setJourneys(journeyData);
-      setTickets(ticketsData);
-      setListings(listingData);
-      setSellerTrail(sellerData);
-      setPurchases(purchaseData);
-      setSessions(sessionData);
-      setAlerts(unreadAlerts);
-      setLocations(locationsData || []);
-
-      const nextPopup = unreadAlerts.find((notification) => notification.category === 'SELLER_REFUND');
-      if (nextPopup) {
-        setPopupNotification((current) => current || nextPopup);
+      if (searchRunRef.current === runId) {
+        setJourneys(journeyData || []);
+        setListings(listingData || []);
       }
     } finally {
-      if (refreshRunRef.current === runId) {
+      if (searchRunRef.current === runId) {
         setJourneyLoading(false);
         setResaleLoading(false);
       }
@@ -116,26 +124,20 @@ export default function UserDashboardPage() {
   }, [hasJourneySearch, hasResaleSearch, journeyQuery, listingQuery]);
 
   useEffect(() => {
-    refreshDashboard().catch((requestError) => setError(requestError.message));
-  }, [refreshDashboard]);
+    if (initialLoadDoneRef.current) {
+      return;
+    }
+    initialLoadDoneRef.current = true;
+    Promise.all([loadBaseData(), loadSearchData()]).catch((requestError) => setError(requestError.message));
+  }, [loadBaseData, loadSearchData]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      refreshDashboard().catch((requestError) => setError(requestError.message));
+      loadSearchData().catch((requestError) => setError(requestError.message));
     }, 250);
 
     return () => clearTimeout(timer);
-  }, [journeyFilters, resaleFilters, refreshDashboard]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refreshDashboard().catch(() => {
-        // no-op; intermittent polling failure shouldn't block UI
-      });
-    }, 8000);
-
-    return () => clearInterval(interval);
-  }, [refreshDashboard]);
+  }, [journeyFilters, resaleFilters, loadSearchData]);
 
   const withAction = async (key, action, successMessage, options = {}) => {
     setBusyKey(key);
@@ -144,7 +146,7 @@ export default function UserDashboardPage() {
 
     try {
       await action();
-      await refreshDashboard();
+      await Promise.all([loadBaseData(), loadSearchData()]);
       setMessage(successMessage);
       return true;
     } catch (requestError) {
