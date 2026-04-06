@@ -1,3 +1,5 @@
+import CollapsiblePanel from './CollapsiblePanel';
+
 function dateTime(value) {
   return new Date(value).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
@@ -8,12 +10,7 @@ function money(value) {
 
 export default function SellerTrail({ listings }) {
   return (
-    <section className="panel">
-      <div className="panel-head">
-        <h2>Seller Trail</h2>
-        <span>Your listed/sold/revoked ticket history</span>
-      </div>
-
+    <CollapsiblePanel title="Seller Trail" subtitle="Your listed/sold/revoked ticket history">
       <ul className="notifications">
         {listings.length === 0 && <li>No listings yet.</li>}
         {listings.map((listing) => (
@@ -28,6 +25,6 @@ export default function SellerTrail({ listings }) {
           </li>
         ))}
       </ul>
-    </section>
+    </CollapsiblePanel>
   );
 }

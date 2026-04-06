@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../AuthContext';
@@ -13,6 +13,7 @@ import JourneyBoard from '../components/JourneyBoard';
 import MyTicketsPanel from '../components/MyTicketsPanel';
 import MyResellingTickets from '../components/MyResellingTickets';
 import UpcomingJourneysPanel from '../components/UpcomingJourneysPanel';
+import DashboardNavbar from '../components/DashboardNavbar';
 
 function buildListingQuery(filters) {
   const params = new URLSearchParams({ status: 'AVAILABLE' });
@@ -55,8 +56,11 @@ export default function UserDashboardPage() {
   const [busyKey, setBusyKey] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [journeyLoading, setJourneyLoading] = useState(false);
+  const [resaleLoading, setResaleLoading] = useState(false);
   const [journeyFilters, setJourneyFilters] = useState({ routeFrom: '', routeTo: '', journeyDate: '' });
   const [resaleFilters, setResaleFilters] = useState({ routeFrom: '', routeTo: '', journeyDate: '' });
+  const refreshRunRef = useRef(0);
 
   const listingQuery = useMemo(() => buildListingQuery(resaleFilters), [resaleFilters]);
   const journeyQuery = useMemo(() => buildJourneyQuery(journeyFilters), [journeyFilters]);
@@ -70,31 +74,44 @@ export default function UserDashboardPage() {
   );
 
   const refreshDashboard = useCallback(async () => {
-    const [dashboardData, journeyData, ticketsData, listingData, sellerData, purchaseData, sessionData, unreadAlerts, locationsData] = await Promise.all([
-      api.getMyDashboard(),
-      hasJourneySearch ? api.getJourneys(journeyQuery) : Promise.resolve([]),
-      api.getMyTickets(),
-      hasResaleSearch ? api.getListings(listingQuery) : Promise.resolve([]),
-      api.getMyListings(),
-      api.getMyPurchases(),
-      api.sessions(),
-      api.getMyNotifications(true, 30),
-      api.getJourneyLocations()
-    ]);
+    const runId = refreshRunRef.current + 1;
+    refreshRunRef.current = runId;
 
-    setDashboard(dashboardData);
-    setJourneys(journeyData);
-    setTickets(ticketsData);
-    setListings(listingData);
-    setSellerTrail(sellerData);
-    setPurchases(purchaseData);
-    setSessions(sessionData);
-    setAlerts(unreadAlerts);
-    setLocations(locationsData || []);
+    setJourneyLoading(hasJourneySearch);
+    setResaleLoading(hasResaleSearch);
 
-    const nextPopup = unreadAlerts.find((notification) => notification.category === 'SELLER_REFUND');
-    if (nextPopup) {
-      setPopupNotification((current) => current || nextPopup);
+    try {
+      const [dashboardData, journeyData, ticketsData, listingData, sellerData, purchaseData, sessionData, unreadAlerts, locationsData] = await Promise.all([
+        api.getMyDashboard(),
+        hasJourneySearch ? api.getJourneys(journeyQuery) : Promise.resolve([]),
+        api.getMyTickets(),
+        hasResaleSearch ? api.getListings(listingQuery) : Promise.resolve([]),
+        api.getMyListings(),
+        api.getMyPurchases(),
+        api.sessions(),
+        api.getMyNotifications(true, 30),
+        api.getJourneyLocations()
+      ]);
+
+      setDashboard(dashboardData);
+      setJourneys(journeyData);
+      setTickets(ticketsData);
+      setListings(listingData);
+      setSellerTrail(sellerData);
+      setPurchases(purchaseData);
+      setSessions(sessionData);
+      setAlerts(unreadAlerts);
+      setLocations(locationsData || []);
+
+      const nextPopup = unreadAlerts.find((notification) => notification.category === 'SELLER_REFUND');
+      if (nextPopup) {
+        setPopupNotification((current) => current || nextPopup);
+      }
+    } finally {
+      if (refreshRunRef.current === runId) {
+        setJourneyLoading(false);
+        setResaleLoading(false);
+      }
     }
   }, [hasJourneySearch, hasResaleSearch, journeyQuery, listingQuery]);
 
@@ -184,17 +201,13 @@ export default function UserDashboardPage() {
 
   return (
     <div className="app-shell">
-      <header className="hero">
-        <div>
-          <p className="tag">TravelSwap User Portal</p>
-          <h1>Buy and Sell from One Dashboard</h1>
-          <p>Signed in as {user.fullName}. Track your profits/losses, sold trail, purchases, and upcoming trips.</p>
-        </div>
-
-        <div className="hero-actions">
-          <button type="button" onClick={onLogout}>Logout</button>
-        </div>
-      </header>
+      <DashboardNavbar
+        portalLabel="TravelSwap User Portal"
+        title="Buy and Sell from One Dashboard"
+        subtitle="Track your profits/losses, sold trail, purchases, and upcoming trips."
+        user={user}
+        onLogout={onLogout}
+      />
 
       <UserSummaryCards summary={dashboard} />
 
@@ -213,6 +226,7 @@ export default function UserDashboardPage() {
             busyKey={busyKey}
             userId={user.id}
             locationOptions={locations}
+            loading={resaleLoading}
           />
           <MyResellingTickets
             listings={sellerTrail.filter((item) => item.status === 'AVAILABLE')}
@@ -228,6 +242,7 @@ export default function UserDashboardPage() {
             setFilters={setJourneyFilters}
             onLoadSeatPlan={api.getJourneySeats}
             locationOptions={locations}
+            loading={journeyLoading}
           />
           <MyTicketsPanel tickets={tickets} />
           <ListingForm onCreate={onCreateListing} busy={busyKey === 'create'} tickets={tickets} />

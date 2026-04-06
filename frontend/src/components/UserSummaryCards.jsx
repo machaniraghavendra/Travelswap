@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 function money(value) {
   return Number(value || 0).toLocaleString('en-IN', {
     style: 'currency',
@@ -7,6 +9,7 @@ function money(value) {
 }
 
 export default function UserSummaryCards({ summary }) {
+  const [expanded, setExpanded] = useState(true);
   const cards = [
     { label: 'Active Selling Tickets', value: summary?.activeSellingTickets ?? 0, tone: 'blue' },
     { label: 'Tickets Purchased', value: summary?.purchasedTickets ?? 0, tone: 'teal' },
@@ -22,13 +25,28 @@ export default function UserSummaryCards({ summary }) {
   ];
 
   return (
-    <section className="summary-grid wide">
-      {cards.map((card) => (
-        <article key={card.label} className={`summary-card ${card.tone}`}>
-          <p>{card.label}</p>
-          <h3>{card.value}</h3>
-        </article>
-      ))}
-    </section>
+    <div className="summary-wrap">
+      <div className="summary-wrap-head">
+        <h2>User Summary</h2>
+        <button
+          type="button"
+          className="panel-toggle-btn"
+          onClick={() => setExpanded((prev) => !prev)}
+          aria-label={expanded ? 'Collapse User Summary' : 'Expand User Summary'}
+        >
+          {expanded ? '▾' : '▸'}
+        </button>
+      </div>
+      {expanded && (
+        <section className="summary-grid wide">
+          {cards.map((card) => (
+            <article key={card.label} className={`summary-card ${card.tone}`}>
+              <p>{card.label}</p>
+              <h3>{card.value}</h3>
+            </article>
+          ))}
+        </section>
+      )}
+    </div>
   );
 }

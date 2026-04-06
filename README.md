@@ -42,6 +42,27 @@ npm install
 npm start
 ```
 
+### 4) Mobile (Android + iOS + Web, same codebase)
+```bash
+cd frontend
+npm run mobile:sync
+```
+
+First time only:
+```bash
+npx cap add android
+npx cap add ios
+```
+
+Run mobile:
+```bash
+npm run mobile:android
+npm run mobile:ios
+```
+
+Detailed guide:
+- `frontend/MOBILE_SETUP.md`
+
 ## Main API Groups
 
 ### Auth

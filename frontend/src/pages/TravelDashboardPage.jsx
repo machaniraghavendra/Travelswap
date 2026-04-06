@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../AuthContext';
 import SessionPanel from '../components/SessionPanel';
+import DashboardNavbar from '../components/DashboardNavbar';
 import { TRAVEL_LOCATIONS } from '../constants/locations';
 
 function dateTimeInput(value) {
@@ -406,23 +407,17 @@ export default function TravelDashboardPage() {
 
   return (
     <div className="app-shell">
-      <header className="hero">
-        <div>
-          <p className="tag">TravelSwap Travel Portal</p>
-          <h1>Journey Operations Dashboard</h1>
-          <p>Signed in as {user.fullName}. Manage buses and journey schedules for your travel.</p>
-          {travelOverview && (
-            <p>
-              Commission Received: INR {Number(travelOverview.commissionReceived || 0).toFixed(2)} |
-              Generated: INR {Number(travelOverview.commissionGenerated || 0).toFixed(2)} |
-              Booked Seats: {travelOverview.totalBookedSeats || 0}
-            </p>
-          )}
-        </div>
-        <div className="hero-actions">
-          <button type="button" onClick={onLogout}>Logout</button>
-        </div>
-      </header>
+      <DashboardNavbar
+        portalLabel="TravelSwap Travel Portal"
+        title="Journey Operations Dashboard"
+        subtitle={
+          travelOverview
+            ? `Manage buses and journeys. Commission Received: INR ${Number(travelOverview.commissionReceived || 0).toFixed(2)} | Generated: INR ${Number(travelOverview.commissionGenerated || 0).toFixed(2)} | Booked Seats: ${travelOverview.totalBookedSeats || 0}`
+            : 'Manage buses and journey schedules for your travel.'
+        }
+        user={user}
+        onLogout={onLogout}
+      />
 
       {(message || error) && (
         <div className={error ? 'banner error' : 'banner success'}>{error || message}</div>

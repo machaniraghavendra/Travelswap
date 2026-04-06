@@ -1,11 +1,35 @@
 import { clearTokens, getAccessToken, getRefreshToken, setTokens } from './authStorage';
 
 const API_BASE = 'https://travelswap.onrender.com/api';
+const REQUEST_TIMEOUT_MS = Number(import.meta.env.VITE_API_TIMEOUT_MS || 15000);
 let refreshInFlight = null;
 
 async function parseError(response) {
   const error = await response.json().catch(() => ({}));
   return error.message || `Request failed with status ${response.status}`;
+}
+
+async function fetchWithTimeout(url, options = {}) {
+  if (options.signal) {
+    return fetch(url, options);
+  }
+
+  const controller = new AbortController();
+  const timeoutHandle = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new Error('Request timed out. Please check connection and try again.');
+    }
+    if (error instanceof TypeError) {
+      throw new Error('Unable to reach TravelSwap server. Please check network and try again.');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
 }
 
 async function refreshAccessToken() {
@@ -18,7 +42,7 @@ async function refreshAccessToken() {
     throw new Error('Session expired. Please sign in again.');
   }
 
-  refreshInFlight = fetch(`${API_BASE}/auth/refresh`, {
+  refreshInFlight = fetchWithTimeout(`${API_BASE}/auth/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refreshToken })
@@ -55,7 +79,7 @@ async function request(path, options = {}, config = { auth: true, retry: true })
     }
   }
 
-  const response = await fetch(`${API_BASE}${path}`, {
+  const response = await fetchWithTimeout(`${API_BASE}${path}`, {
     ...options,
     headers
   });

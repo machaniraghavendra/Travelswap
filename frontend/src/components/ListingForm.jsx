@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import CollapsiblePanel from './CollapsiblePanel';
 
 const initialState = {
   mode: 'OWNED',
@@ -132,13 +133,10 @@ export default function ListingForm({ onCreate, busy, tickets }) {
   };
 
   return (
-    <form className="panel listing-form" onSubmit={onSubmit}>
-      <div className="panel-head">
-        <h2>Sell My Ticket</h2>
-        <span>Sell owned tickets or cross-platform purchases</span>
-      </div>
+    <CollapsiblePanel title="Sell My Ticket" subtitle="Sell owned tickets or cross-platform purchases" className="listing-form">
+      <form onSubmit={onSubmit}>
 
-      <div className="form-grid">
+        <div className="form-grid">
         <label>
           Sell Type
           <select
@@ -276,21 +274,22 @@ export default function ListingForm({ onCreate, busy, tickets }) {
             onChange={(event) => setForm((prev) => ({ ...prev, sellerContact: event.target.value }))}
           />
         </label>
-      </div>
+        </div>
 
-      {selectedTicket && (
-        <p className="muted-note">
-          Selected: {selectedTicket.travelName} | {selectedTicket.busNumber} | Paid: INR {Number(selectedTicket.amountPaid || 0).toFixed(2)}
-        </p>
-      )}
-      {errors._form && <small className="field-error">{errors._form}</small>}
-      {form.mode === 'OWNED' && saleEligibleTickets.length === 0 && (
-        <small className="field-error">You have no BOOKED tickets available for resale. Use Cross-Platform Ticket to list external purchases.</small>
-      )}
+        {selectedTicket && (
+          <p className="muted-note">
+            Selected: {selectedTicket.travelName} | {selectedTicket.busNumber} | Paid: INR {Number(selectedTicket.amountPaid || 0).toFixed(2)}
+          </p>
+        )}
+        {errors._form && <small className="field-error">{errors._form}</small>}
+        {form.mode === 'OWNED' && saleEligibleTickets.length === 0 && (
+          <small className="field-error">You have no BOOKED tickets available for resale. Use Cross-Platform Ticket to list external purchases.</small>
+        )}
 
-      <button type="submit" disabled={busy || (form.mode === 'OWNED' && saleEligibleTickets.length === 0)}>
-        {busy ? 'Publishing...' : 'Publish Resale Listing'}
-      </button>
-    </form>
+        <button type="submit" disabled={busy || (form.mode === 'OWNED' && saleEligibleTickets.length === 0)}>
+          {busy ? 'Publishing...' : 'Publish Resale Listing'}
+        </button>
+      </form>
+    </CollapsiblePanel>
   );
 }

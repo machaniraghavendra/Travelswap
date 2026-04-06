@@ -1,15 +1,16 @@
+import CollapsiblePanel from './CollapsiblePanel';
+
 function time(value) {
   return new Date(value).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
 export default function NotificationFeed({ notifications, providers, streamState }) {
   return (
-    <section className="panel side-panel">
-      <div className="panel-head">
-        <h2>System Pulse</h2>
-        <span className={`stream-pill ${streamState.toLowerCase()}`}>{streamState}</span>
-      </div>
-
+    <CollapsiblePanel
+      title="System Pulse"
+      className="side-panel"
+      headerMeta={<span className={`stream-pill ${streamState.toLowerCase()}`}>{streamState}</span>}
+    >
       <h4>Provider Integration Layer</h4>
       <ul className="providers">
         {providers.map((provider) => (
@@ -30,6 +31,6 @@ export default function NotificationFeed({ notifications, providers, streamState
           </li>
         ))}
       </ul>
-    </section>
+    </CollapsiblePanel>
   );
 }

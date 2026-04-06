@@ -1,18 +1,21 @@
+import CollapsiblePanel from './CollapsiblePanel';
+
 function time(value) {
   return new Date(value).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
 export default function AuditPanel({ logs, loading, hasMore, onView, onLoadMore, visible }) {
   return (
-    <section className="panel">
-      <div className="panel-head">
-        <h2>Audit Trail</h2>
-        <span>Server transaction logs</span>
-      </div>
+    <CollapsiblePanel title="Audit Trail" subtitle="Server transaction logs">
 
       {!visible && (
         <button type="button" onClick={onView} disabled={loading}>
-          {loading ? 'Loading...' : 'View Audit Logs'}
+          {loading ? (
+            <span className="loading-inline">
+              <span className="spinner spinner-sm" aria-hidden="true" />
+              <span>Loading...</span>
+            </span>
+          ) : 'View Audit Logs'}
         </button>
       )}
 
@@ -33,12 +36,17 @@ export default function AuditPanel({ logs, loading, hasMore, onView, onLoadMore,
           <div className="popup-actions">
             {hasMore && (
               <button type="button" onClick={onLoadMore} disabled={loading}>
-                {loading ? 'Loading...' : 'Load Next Chunk'}
+                {loading ? (
+                  <span className="loading-inline">
+                    <span className="spinner spinner-sm" aria-hidden="true" />
+                    <span>Loading...</span>
+                  </span>
+                ) : 'Load Next Chunk'}
               </button>
             )}
           </div>
         </>
       )}
-    </section>
+    </CollapsiblePanel>
   );
 }

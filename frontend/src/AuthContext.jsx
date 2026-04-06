@@ -10,6 +10,11 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let active = true;
+    const loadingGuard = setTimeout(() => {
+      if (active) {
+        setLoading(false);
+      }
+    }, 12000);
 
     async function bootstrap() {
       const token = getAccessToken();
@@ -28,6 +33,7 @@ export function AuthProvider({ children }) {
       } catch {
         clearTokens();
       } finally {
+        clearTimeout(loadingGuard);
         if (active) {
           setLoading(false);
         }
@@ -37,6 +43,7 @@ export function AuthProvider({ children }) {
     bootstrap();
     return () => {
       active = false;
+      clearTimeout(loadingGuard);
     };
   }, []);
 

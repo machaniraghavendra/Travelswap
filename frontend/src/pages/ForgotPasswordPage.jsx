@@ -57,7 +57,14 @@ export default function ForgotPasswordPage() {
             Email
             <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
           </label>
-          <button type="submit" disabled={busy}>{busy ? 'Generating...' : 'Generate Reset Token'}</button>
+          <button type="submit" disabled={busy}>
+            {busy ? (
+              <span className="loading-inline">
+                <span className="spinner spinner-sm" aria-hidden="true" />
+                <span>Generating...</span>
+              </span>
+            ) : 'Generate Reset Token'}
+          </button>
         </form>
 
         {generatedToken && (
@@ -82,7 +89,14 @@ export default function ForgotPasswordPage() {
           <label>
             <input type="checkbox" checked={showPassword} onChange={(event) => setShowPassword(event.target.checked)} /> Show Password
           </label>
-          <button type="submit" disabled={busy}>{busy ? 'Resetting...' : 'Reset Password'}</button>
+          <button type="submit" disabled={busy}>
+            {busy ? (
+              <span className="loading-inline">
+                <span className="spinner spinner-sm" aria-hidden="true" />
+                <span>Resetting...</span>
+              </span>
+            ) : 'Reset Password'}
+          </button>
         </form>
 
         {message && <div className="banner success">{message}</div>}

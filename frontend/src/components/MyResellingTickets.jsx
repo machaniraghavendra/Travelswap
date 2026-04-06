@@ -1,3 +1,5 @@
+import CollapsiblePanel from './CollapsiblePanel';
+
 function money(value) {
   return Number(value || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
 }
@@ -13,12 +15,7 @@ function dateTime(value) {
 
 export default function MyResellingTickets({ listings, onUpdatePrice, onRevoke, busyKey }) {
   return (
-    <section className="panel">
-      <div className="panel-head">
-        <h2>My Reselling Tickets</h2>
-        <span>Manage only your own resale listings here</span>
-      </div>
-
+    <CollapsiblePanel title="My Reselling Tickets" subtitle="Manage only your own resale listings here">
       <div className="listing-grid">
         {listings.length === 0 && <p className="empty">No active resale tickets from your account.</p>}
         {listings.map((listing) => (
@@ -61,6 +58,6 @@ export default function MyResellingTickets({ listings, onUpdatePrice, onRevoke, 
           </article>
         ))}
       </div>
-    </section>
+    </CollapsiblePanel>
   );
 }

@@ -7,13 +7,19 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import { ThemeProvider } from './ThemeContext';
-import ThemeSwitcher from './components/ThemeSwitcher';
 
 function AuthGate({ children }) {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return <div className="loading-shell">Loading TravelSwap...</div>;
+    return (
+      <div className="loading-shell">
+        <div className="loading-inline">
+          <span className="spinner" aria-hidden="true" />
+          <span>Loading TravelSwap...</span>
+        </div>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
@@ -27,7 +33,14 @@ function PublicGate({ children }) {
   const { isAuthenticated, loading, user } = useAuth();
 
   if (loading) {
-    return <div className="loading-shell">Loading TravelSwap...</div>;
+    return (
+      <div className="loading-shell">
+        <div className="loading-inline">
+          <span className="spinner" aria-hidden="true" />
+          <span>Loading TravelSwap...</span>
+        </div>
+      </div>
+    );
   }
 
   if (isAuthenticated) {
@@ -67,7 +80,6 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
-          <ThemeSwitcher />
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<AuthGate><RoleDashboard /></AuthGate>} />

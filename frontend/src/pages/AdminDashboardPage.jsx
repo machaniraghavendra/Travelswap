@@ -7,6 +7,7 @@ import SummaryCards from '../components/SummaryCards';
 import SessionPanel from '../components/SessionPanel';
 import AuditPanel from '../components/AuditPanel';
 import AdminOverviewPanel from '../components/AdminOverviewPanel';
+import DashboardNavbar from '../components/DashboardNavbar';
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -111,17 +112,13 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="app-shell">
-      <header className="hero">
-        <div>
-          <p className="tag">TravelSwap Admin</p>
-          <h1>System Control Portal</h1>
-          <p>Signed in as {user.fullName}. Admin-only visibility for system pulse, events, and audit trails.</p>
-        </div>
-
-        <div className="hero-actions">
-          <button type="button" onClick={onLogout}>Logout</button>
-        </div>
-      </header>
+      <DashboardNavbar
+        portalLabel="TravelSwap Admin"
+        title="System Control Portal"
+        subtitle="Admin-only visibility for system pulse, events, and audit trails."
+        user={user}
+        onLogout={onLogout}
+      />
 
       <SummaryCards summary={summary} />
 

@@ -1,0 +1,9 @@
+{
+  "appId": "com.travelswap.app",
+  "appName": "TravelSwap",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}

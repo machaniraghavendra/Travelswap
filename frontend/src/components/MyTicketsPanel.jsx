@@ -1,3 +1,5 @@
+import CollapsiblePanel from './CollapsiblePanel';
+
 function money(value) {
   return Number(value || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
 }
@@ -13,12 +15,7 @@ function dateTime(value) {
 
 export default function MyTicketsPanel({ tickets }) {
   return (
-    <section className="panel">
-      <div className="panel-head">
-        <h2>My Owned Tickets</h2>
-        <span>Book, hold, and sell from this inventory</span>
-      </div>
-
+    <CollapsiblePanel title="My Owned Tickets" subtitle="Book, hold, and sell from this inventory">
       <ul className="notifications">
         {tickets.length === 0 && <li>No tickets booked yet.</li>}
         {tickets.map((ticket) => (
@@ -34,6 +31,6 @@ export default function MyTicketsPanel({ tickets }) {
           </li>
         ))}
       </ul>
-    </section>
+    </CollapsiblePanel>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { TRAVEL_LOCATIONS } from '../constants/locations';
+import CollapsiblePanel from './CollapsiblePanel';
 
 function money(value) {
   return Number(value || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
@@ -115,7 +116,7 @@ function SeatButton({ seat, selected, onToggle }) {
   );
 }
 
-export default function JourneyBoard({ journeys, onBook, busyKey, filters, setFilters, onLoadSeatPlan, locationOptions = [] }) {
+export default function JourneyBoard({ journeys, onBook, busyKey, filters, setFilters, onLoadSeatPlan, locationOptions = [], loading = false }) {
   const [seatModal, setSeatModal] = useState(null);
   const [modalError, setModalError] = useState('');
   const [selectedSeats, setSelectedSeats] = useState([]);
@@ -168,6 +169,13 @@ export default function JourneyBoard({ journeys, onBook, busyKey, filters, setFi
   );
   const fromOptions = useMemo(() => locations.filter((location) => location !== filters.routeTo), [locations, filters.routeTo]);
   const toOptions = useMemo(() => locations.filter((location) => location !== filters.routeFrom), [locations, filters.routeFrom]);
+  const swapRouteFilters = () => {
+    setFilters((prev) => ({
+      ...prev,
+      routeFrom: prev.routeTo || '',
+      routeTo: prev.routeFrom || ''
+    }));
+  };
 
   const openSeatPicker = async (journey) => {
     setModalError('');
@@ -268,33 +276,40 @@ export default function JourneyBoard({ journeys, onBook, busyKey, filters, setFi
   );
 
   return (
-    <section className="panel">
-      <div className="panel-head">
-        <h2>Book Seats</h2>
-        <span>Primary booking from travel operators</span>
-      </div>
+    <CollapsiblePanel title="Book Seats" subtitle="Primary booking from travel operators">
 
       <div className="filters">
-        <select value={filters.routeFrom} onChange={(event) => setFilters((prev) => ({ ...prev, routeFrom: event.target.value, routeTo: prev.routeTo === event.target.value ? '' : prev.routeTo }))}>
-          <option value="">From city</option>
-          {fromOptions.map((location) => (
-            <option key={`from-${location}`} value={location}>{location}</option>
-          ))}
-        </select>
-        <select value={filters.routeTo} onChange={(event) => setFilters((prev) => ({ ...prev, routeTo: event.target.value, routeFrom: prev.routeFrom === event.target.value ? '' : prev.routeFrom }))}>
-          <option value="">To city</option>
-          {toOptions.map((location) => (
-            <option key={`to-${location}`} value={location}>{location}</option>
-          ))}
-        </select>
+        <div className="route-swap-row">
+          <select value={filters.routeFrom} onChange={(event) => setFilters((prev) => ({ ...prev, routeFrom: event.target.value, routeTo: prev.routeTo === event.target.value ? '' : prev.routeTo }))}>
+            <option value="">From city</option>
+            {fromOptions.map((location) => (
+              <option key={`from-${location}`} value={location}>{location}</option>
+            ))}
+          </select>
+          <button type="button" className="swap-icon-btn" onClick={swapRouteFilters} aria-label="Swap From and To" title="Swap From and To">
+            ↔
+          </button>
+          <select value={filters.routeTo} onChange={(event) => setFilters((prev) => ({ ...prev, routeTo: event.target.value, routeFrom: prev.routeFrom === event.target.value ? '' : prev.routeFrom }))}>
+            <option value="">To city</option>
+            {toOptions.map((location) => (
+              <option key={`to-${location}`} value={location}>{location}</option>
+            ))}
+          </select>
+        </div>
         <input type="date" value={filters.journeyDate || ''} onChange={(event) => setFilters((prev) => ({ ...prev, journeyDate: event.target.value }))} />
       </div>
 
       {!hasSearch && <p className="empty">Search using From, To, and Date to view available buses and seats.</p>}
 
       <div className="listing-grid">
-        {hasSearch && journeys.length === 0 && <p className="empty">No journey schedules found for these filters.</p>}
-        {journeys.map((journey) => (
+        {hasSearch && loading && (
+          <p className="empty loading-inline">
+            <span className="spinner spinner-sm" aria-hidden="true" />
+            <span>Loading available buses and seats...</span>
+          </p>
+        )}
+        {hasSearch && !loading && journeys.length === 0 && <p className="empty">No journey schedules found for these filters.</p>}
+        {!loading && journeys.map((journey) => (
           <article key={journey.id} className="listing-card">
             <header>
               <h3>{journey.routeFrom} to {journey.routeTo}</h3>
@@ -431,6 +446,6 @@ export default function JourneyBoard({ journeys, onBook, busyKey, filters, setFi
           </div>
         </div>
       )}
-    </section>
+    </CollapsiblePanel>
   );
 }

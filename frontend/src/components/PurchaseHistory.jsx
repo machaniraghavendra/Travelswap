@@ -1,3 +1,5 @@
+import CollapsiblePanel from './CollapsiblePanel';
+
 function dateTime(value) {
   return new Date(value).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
@@ -8,12 +10,7 @@ function money(value) {
 
 export default function PurchaseHistory({ tickets }) {
   return (
-    <section className="panel">
-      <div className="panel-head">
-        <h2>Purchased Tickets</h2>
-        <span>All purchased ticket details</span>
-      </div>
-
+    <CollapsiblePanel title="Purchased Tickets" subtitle="All purchased ticket details">
       <ul className="notifications">
         {tickets.length === 0 && <li>No purchased tickets yet.</li>}
         {tickets.map((ticket) => (
@@ -28,6 +25,6 @@ export default function PurchaseHistory({ tickets }) {
           </li>
         ))}
       </ul>
-    </section>
+    </CollapsiblePanel>
   );
 }

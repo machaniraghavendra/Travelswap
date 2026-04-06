@@ -158,7 +158,14 @@ export default function RegisterPage({ accountType = 'USER' }) {
             </>
           )}
 
-          <button type="submit" disabled={busy}>{busy ? 'Creating...' : 'Create Account'}</button>
+          <button type="submit" disabled={busy}>
+            {busy ? (
+              <span className="loading-inline">
+                <span className="spinner spinner-sm" aria-hidden="true" />
+                <span>Creating...</span>
+              </span>
+            ) : 'Create Account'}
+          </button>
           {errors._form && <small className="field-error">{errors._form}</small>}
         </form>
 

@@ -10,7 +10,15 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:5173", "http://127.0.0.1:5173", "https://travelswap-dusky.vercel.app")
+                .allowedOrigins(
+                        "http://localhost:5173",
+                        "http://127.0.0.1:5173",
+                        "https://travelswap-dusky.vercel.app",
+                        "http://localhost",
+                        "https://localhost",
+                        "capacitor://localhost",
+                        "ionic://localhost"
+                )
                 .allowedMethods("GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS")
                 .allowedHeaders("*")
                 .exposedHeaders("X-Request-Id");

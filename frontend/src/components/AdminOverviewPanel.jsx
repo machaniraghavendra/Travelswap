@@ -1,14 +1,11 @@
+import CollapsiblePanel from './CollapsiblePanel';
+
 export default function AdminOverviewPanel({ overview }) {
   const stats = overview || {};
   const money = (value) => Number(value || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
 
   return (
-    <section className="panel">
-      <div className="panel-head">
-        <h2>Admin Overview</h2>
-        <span>Travellers, sellers, buyers and ecosystem counts</span>
-      </div>
-
+    <CollapsiblePanel title="Admin Overview" subtitle="Travellers, sellers, buyers and ecosystem counts">
       <div className="admin-stats-grid">
         <article className="admin-stat-card">
           <h4>Users</h4>
@@ -35,6 +32,6 @@ export default function AdminOverviewPanel({ overview }) {
           <p>Booking Fee Share: {money(stats.bookingPlatformFees)}</p>
         </article>
       </div>
-    </section>
+    </CollapsiblePanel>
   );
 }

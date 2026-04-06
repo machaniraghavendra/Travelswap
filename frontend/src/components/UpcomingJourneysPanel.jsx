@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import CollapsiblePanel from './CollapsiblePanel';
 
 function dateTime(value) {
   return new Date(value).toLocaleString('en-IN', {
@@ -22,12 +23,7 @@ export default function UpcomingJourneysPanel({ tickets }) {
   );
 
   return (
-    <section className="panel">
-      <div className="panel-head">
-        <h2>Upcoming Journeys</h2>
-        <span>Click a card to view full details</span>
-      </div>
-
+    <CollapsiblePanel title="Upcoming Journeys" subtitle="Click a card to view full details">
       <div className="summary-grid">
         {upcoming.length === 0 && <p className="empty">No upcoming journeys.</p>}
         {upcoming.map((ticket) => (
@@ -59,6 +55,6 @@ export default function UpcomingJourneysPanel({ tickets }) {
           </div>
         </div>
       )}
-    </section>
+    </CollapsiblePanel>
   );
 }

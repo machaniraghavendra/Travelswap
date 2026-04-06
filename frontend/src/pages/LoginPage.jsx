@@ -104,7 +104,14 @@ export default function LoginPage({ accountType = 'USER' }) {
             <input type="checkbox" checked={showPassword} onChange={(event) => setShowPassword(event.target.checked)} /> Show Password
           </label>
 
-          <button type="submit" disabled={busy}>{busy ? 'Signing in...' : 'Sign In'}</button>
+          <button type="submit" disabled={busy}>
+            {busy ? (
+              <span className="loading-inline">
+                <span className="spinner spinner-sm" aria-hidden="true" />
+                <span>Signing in...</span>
+              </span>
+            ) : 'Sign In'}
+          </button>
           {errors._form && <small className="field-error">{errors._form}</small>}
         </form>
 

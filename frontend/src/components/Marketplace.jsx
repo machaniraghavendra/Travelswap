@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { TRAVEL_LOCATIONS } from '../constants/locations';
+import CollapsiblePanel from './CollapsiblePanel';
 
 function money(value) {
   return Number(value || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
@@ -21,7 +22,8 @@ export default function Marketplace({
   onPurchase,
   busyKey,
   userId,
-  locationOptions = []
+  locationOptions = [],
+  loading = false
 }) {
   const [buyers, setBuyers] = useState({});
   const [buyModal, setBuyModal] = useState(null);
@@ -38,6 +40,13 @@ export default function Marketplace({
   );
   const fromOptions = useMemo(() => locations.filter((location) => location !== filters.routeTo), [locations, filters.routeTo]);
   const toOptions = useMemo(() => locations.filter((location) => location !== filters.routeFrom), [locations, filters.routeFrom]);
+  const swapRouteFilters = () => {
+    setFilters((prev) => ({
+      ...prev,
+      routeFrom: prev.routeTo || '',
+      routeTo: prev.routeFrom || ''
+    }));
+  };
 
   const handlePurchase = async () => {
     if (!buyModal) {
@@ -60,31 +69,32 @@ export default function Marketplace({
   };
 
   return (
-    <section className="panel marketplace">
-      <div className="panel-head">
-        <h2>Reselling Tickets</h2>
-        <span>Book from resale inventory separately from primary bookings</span>
-      </div>
+    <CollapsiblePanel title="Reselling Tickets" subtitle="Book from resale inventory separately from primary bookings" className="marketplace">
 
       <div className="filters">
-        <select
-          value={filters.routeFrom}
-          onChange={(event) => setFilters((prev) => ({ ...prev, routeFrom: event.target.value, routeTo: prev.routeTo === event.target.value ? '' : prev.routeTo }))}
-        >
-          <option value="">From city</option>
-          {fromOptions.map((location) => (
-            <option key={`resale-from-${location}`} value={location}>{location}</option>
-          ))}
-        </select>
-        <select
-          value={filters.routeTo}
-          onChange={(event) => setFilters((prev) => ({ ...prev, routeTo: event.target.value, routeFrom: prev.routeFrom === event.target.value ? '' : prev.routeFrom }))}
-        >
-          <option value="">To city</option>
-          {toOptions.map((location) => (
-            <option key={`resale-to-${location}`} value={location}>{location}</option>
-          ))}
-        </select>
+        <div className="route-swap-row">
+          <select
+            value={filters.routeFrom}
+            onChange={(event) => setFilters((prev) => ({ ...prev, routeFrom: event.target.value, routeTo: prev.routeTo === event.target.value ? '' : prev.routeTo }))}
+          >
+            <option value="">From city</option>
+            {fromOptions.map((location) => (
+              <option key={`resale-from-${location}`} value={location}>{location}</option>
+            ))}
+          </select>
+          <button type="button" className="swap-icon-btn" onClick={swapRouteFilters} aria-label="Swap From and To" title="Swap From and To">
+            ↔
+          </button>
+          <select
+            value={filters.routeTo}
+            onChange={(event) => setFilters((prev) => ({ ...prev, routeTo: event.target.value, routeFrom: prev.routeFrom === event.target.value ? '' : prev.routeFrom }))}
+          >
+            <option value="">To city</option>
+            {toOptions.map((location) => (
+              <option key={`resale-to-${location}`} value={location}>{location}</option>
+            ))}
+          </select>
+        </div>
         <input
           type="date"
           value={filters.journeyDate || ''}
@@ -94,9 +104,15 @@ export default function Marketplace({
 
       <div className="listing-grid">
         {!hasSearch && <p className="empty">Search using From, To, and Date to view resale tickets.</p>}
-        {hasSearch && visibleListings.length === 0 && <p className="empty">No resale tickets found for these filters.</p>}
+        {hasSearch && loading && (
+          <p className="empty loading-inline">
+            <span className="spinner spinner-sm" aria-hidden="true" />
+            <span>Loading resale tickets...</span>
+          </p>
+        )}
+        {hasSearch && !loading && visibleListings.length === 0 && <p className="empty">No resale tickets found for these filters.</p>}
 
-        {hasSearch && visibleListings.map((listing) => (
+        {hasSearch && !loading && visibleListings.map((listing) => (
             <article key={listing.id} className="listing-card">
               <header>
                 <h3>{listing.routeFrom} to {listing.routeTo}</h3>
@@ -248,6 +264,6 @@ export default function Marketplace({
           </div>
         </div>
       )}
-    </section>
+    </CollapsiblePanel>
   );
 }
