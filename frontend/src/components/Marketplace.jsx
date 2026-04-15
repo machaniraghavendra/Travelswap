@@ -47,6 +47,9 @@ export default function Marketplace({
   const fromOptions = useMemo(() => locations.filter((location) => location !== filters.routeTo), [locations, filters.routeTo]);
   const toOptions = useMemo(() => locations.filter((location) => location !== filters.routeFrom), [locations, filters.routeFrom]);
   const minJourneyDate = useMemo(() => todayLocalDate(), []);
+  const clearSearchFilters = () => {
+    setFilters({ routeFrom: '', routeTo: '', journeyDate: '' });
+  };
   const swapRouteFilters = () => {
     setFilters((prev) => ({
       ...prev,
@@ -108,6 +111,9 @@ export default function Marketplace({
           value={filters.journeyDate || ''}
           onChange={(event) => setFilters((prev) => ({ ...prev, journeyDate: event.target.value }))}
         />
+        <div className="filters-actions">
+          <button type="button" className="subtle-button" onClick={clearSearchFilters}>Clear</button>
+        </div>
       </div>
 
       <div className="listing-grid">
@@ -121,30 +127,30 @@ export default function Marketplace({
         {hasSearch && !loading && visibleListings.length === 0 && <p className="empty">No resale tickets found for these filters.</p>}
 
         {hasSearch && !loading && visibleListings.map((listing) => (
-            <article key={listing.id} className="listing-card">
-              <header>
-                <h3>{listing.routeFrom} to {listing.routeTo}</h3>
-                <span>{listing.sourcePlatform}</span>
-              </header>
+          <article key={listing.id} className="listing-card">
+            <header>
+              <h3>{listing.routeFrom} to {listing.routeTo}</h3>
+              <span>{listing.sourcePlatform}</span>
+            </header>
 
-              <div className="listing-meta">
-                <p><strong>Travel:</strong> {listing.travelName || listing.operatorName}</p>
-                <p><strong>Bus:</strong> {listing.busNumber || 'N/A'} {listing.busType ? `(${listing.busType})` : ''}</p>
-                <p><strong>Operator:</strong> {listing.operatorName}</p>
-                <p><strong>Seat:</strong> {listing.seatNumber}</p>
-                <p><strong>Departure:</strong> {dateTime(listing.departureTime)}</p>
-                <p><strong>Original Fare:</strong> {money(listing.originalFare)}</p>
-                <p><strong>Listed Price:</strong> {money(listing.resalePrice)}</p>
-                <p><strong>Estimated Platform Fee:</strong> {money(listing.platformFee || 0)}</p>
-                <p><strong>Estimated Traveller Charge:</strong> {money(listing.travellerCommission || 0)}</p>
-                <p><strong>Total Amount You Pay:</strong> {money(listing.buyerFinalPrice || listing.resalePrice)}</p>
-                <p><strong>Seller:</strong> {listing.sellerName}</p>
-              </div>
+            <div className="listing-meta">
+              <p><strong>Travel:</strong> {listing.travelName || listing.operatorName}</p>
+              <p><strong>Bus:</strong> {listing.busNumber || 'N/A'} {listing.busType ? `(${listing.busType})` : ''}</p>
+              <p><strong>Operator:</strong> {listing.operatorName}</p>
+              <p><strong>Seat:</strong> {listing.seatNumber}</p>
+              <p><strong>Departure:</strong> {dateTime(listing.departureTime)}</p>
+              <p><strong>Original Fare:</strong> {money(listing.originalFare)}</p>
+              <p><strong>Listed Price:</strong> {money(listing.resalePrice)}</p>
+              <p><strong>Estimated Platform Fee:</strong> {money(listing.platformFee || 0)}</p>
+              <p><strong>Estimated Traveller Charge:</strong> {money(listing.travellerCommission || 0)}</p>
+              <p><strong>Total Amount You Pay:</strong> {money(listing.buyerFinalPrice || listing.resalePrice)}</p>
+              <p><strong>Seller:</strong> {listing.sellerName}</p>
+            </div>
 
-              <button type="button" onClick={() => setBuyModal(listing)} disabled={busyKey === `buy-${listing.id}`}>
-                {busyKey === `buy-${listing.id}` ? 'Processing...' : 'Buy Ticket'}
-              </button>
-            </article>
+            <button type="button" onClick={() => setBuyModal(listing)} disabled={busyKey === `buy-${listing.id}`}>
+              {busyKey === `buy-${listing.id}` ? 'Processing...' : 'Buy Ticket'}
+            </button>
+          </article>
         ))}
       </div>
 

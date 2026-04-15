@@ -350,6 +350,17 @@ public class TicketMarketplaceService {
             buyerTicket.setOwner(buyer);
             buyerTicket.setJourney(sourceTicket.getJourney());
             buyerTicket.setSeatNumber(sourceTicket.getSeatNumber());
+            buyerTicket.setPassengerName(
+                    sourceTicket.getPassengerName() == null || sourceTicket.getPassengerName().isBlank()
+                            ? buyer.getFullName()
+                            : sourceTicket.getPassengerName()
+            );
+            buyerTicket.setPassengerAge(sourceTicket.getPassengerAge());
+            buyerTicket.setPassengerPhone(
+                    sourceTicket.getPassengerPhone() == null || sourceTicket.getPassengerPhone().isBlank()
+                            ? resolveBuyerContact(purchaseRequest, buyer)
+                            : sourceTicket.getPassengerPhone()
+            );
             buyerTicket.setPassengerGender(passengerGender);
             buyerTicket.setPickupPoint(pickupPoint);
             buyerTicket.setDroppingPoint(droppingPoint);

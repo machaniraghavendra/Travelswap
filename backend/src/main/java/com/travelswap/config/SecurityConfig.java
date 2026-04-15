@@ -4,6 +4,7 @@ import com.travelswap.security.JwtAuthenticationFilter;
 import com.travelswap.security.RestAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -37,6 +38,7 @@ public class SecurityConfig {
                 .exceptionHandling(configurer -> configurer.authenticationEntryPoint(restAuthenticationEntryPoint))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout", "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/journeys/**", "/api/listings/**").permitAll()
                         .requestMatchers("/api/audit/**", "/api/providers", "/api/notifications", "/api/stream/**", "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

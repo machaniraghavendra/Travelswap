@@ -478,6 +478,12 @@ public class JourneyService {
 
     private UserTicketResponse mapTicket(UserTicketEntity ticket) {
         JourneyEntity journey = ticket.getJourney();
+        String passengerName = (ticket.getPassengerName() == null || ticket.getPassengerName().isBlank())
+                ? ticket.getOwner().getFullName()
+                : ticket.getPassengerName();
+        String passengerPhone = (ticket.getPassengerPhone() == null || ticket.getPassengerPhone().isBlank())
+                ? ticket.getOwner().getPhone()
+                : ticket.getPassengerPhone();
         return new UserTicketResponse(
                 ticket.getId(),
                 journey.getId(),
@@ -490,9 +496,9 @@ public class JourneyService {
                 journey.getRouteTo(),
                 journey.getDepartureTime(),
                 ticket.getSeatNumber(),
-                ticket.getPassengerName(),
+                passengerName,
                 ticket.getPassengerAge(),
-                ticket.getPassengerPhone(),
+                passengerPhone,
                 ticket.getPassengerGender(),
                 ticket.getPickupPoint(),
                 ticket.getDroppingPoint(),

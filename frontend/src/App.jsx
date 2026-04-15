@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
 import UserDashboardPage from './pages/UserDashboardPage';
@@ -7,6 +8,60 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import { ThemeProvider } from './ThemeContext';
+
+function GlobalModalScrollLock() {
+  const lockedRef = useRef(false);
+  const scrollYRef = useRef(0);
+
+  useEffect(() => {
+    const body = document.body;
+
+    const lock = () => {
+      if (lockedRef.current) return;
+      scrollYRef.current = window.scrollY || window.pageYOffset || 0;
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      body.style.paddingRight = scrollbarWidth > 0 ? `${scrollbarWidth}px` : '';
+      body.style.top = `-${scrollYRef.current}px`;
+      body.classList.add('modal-open');
+      lockedRef.current = true;
+    };
+
+    const unlock = () => {
+      if (!lockedRef.current) return;
+      body.classList.remove('modal-open');
+      body.style.top = '';
+      body.style.paddingRight = '';
+      const lastY = scrollYRef.current;
+      lockedRef.current = false;
+      window.scrollTo(0, lastY);
+    };
+
+    const update = () => {
+      const hasModal = Boolean(document.querySelector('.popup-wrap,[role="dialog"][aria-modal="true"]'));
+      if (hasModal) {
+        lock();
+      } else {
+        unlock();
+      }
+    };
+
+    const observer = new MutationObserver(() => {
+      window.requestAnimationFrame(update);
+    });
+
+    observer.observe(body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    window.addEventListener('resize', update);
+    update();
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', update);
+      unlock();
+    };
+  }, []);
+
+  return null;
+}
 
 function AuthGate({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -80,6 +135,7 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
+          <GlobalModalScrollLock />
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<AuthGate><RoleDashboard /></AuthGate>} />

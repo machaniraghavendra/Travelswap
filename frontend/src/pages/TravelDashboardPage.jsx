@@ -4,6 +4,7 @@ import { api } from '../api';
 import { useAuth } from '../AuthContext';
 import SessionPanel from '../components/SessionPanel';
 import DashboardNavbar from '../components/DashboardNavbar';
+import ToastNotifications from '../components/ToastNotifications';
 import { TRAVEL_LOCATIONS } from '../constants/locations';
 
 function dateTimeInput(value) {
@@ -66,6 +67,7 @@ export default function TravelDashboardPage() {
   const [busyKey, setBusyKey] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [toasts, setToasts] = useState([]);
 
   const [busForm, setBusForm] = useState({
     travelId: '',
@@ -140,6 +142,18 @@ export default function TravelDashboardPage() {
       setBusyKey('');
     }
   };
+
+  useEffect(() => {
+    if (!message) return;
+    setToasts((prev) => [...prev, { id: `${Date.now()}-${Math.random()}`, type: 'success', message }]);
+    setMessage('');
+  }, [message]);
+
+  useEffect(() => {
+    if (!error) return;
+    setToasts((prev) => [...prev, { id: `${Date.now()}-${Math.random()}`, type: 'error', message: error }]);
+    setError('');
+  }, [error]);
 
   const selectedTravelBuses = useMemo(() => {
     const travel = travels.find((item) => String(item.id) === journeyForm.travelId);
@@ -418,10 +432,6 @@ export default function TravelDashboardPage() {
         user={user}
         onLogout={onLogout}
       />
-
-      {(message || error) && (
-        <div className={error ? 'banner error' : 'banner success'}>{error || message}</div>
-      )}
 
       <main className="layout">
         <section className="left-col">
@@ -719,6 +729,7 @@ export default function TravelDashboardPage() {
           />
         </section>
       </main>
+      <ToastNotifications toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((item) => item.id !== id))} />
     </div>
   );
 }

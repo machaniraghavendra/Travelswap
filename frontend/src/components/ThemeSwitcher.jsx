@@ -6,7 +6,7 @@ export default function ThemeSwitcher() {
   const currentIndex = order.indexOf(mode);
   const nextMode = order[(currentIndex + 1) % order.length];
 
-  const icon = mode === 'dark' ? '🌙' : mode === 'light' ? '☀️' : '🖥️';
+  const icon = mode === 'dark' ? '\u{1F319}' : mode === 'light' ? '\u2600\uFE0F' : '\u{1F5A5}\uFE0F';
   const label = mode === 'dark' ? 'Dark' : mode === 'light' ? 'Light' : 'System';
 
   return (

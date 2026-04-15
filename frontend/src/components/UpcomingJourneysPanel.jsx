@@ -36,8 +36,8 @@ export default function UpcomingJourneysPanel({ tickets }) {
       </div>
 
       {active && (
-        <div className="popup-wrap" role="dialog" aria-modal="true">
-          <div className="popup-card">
+        <div className="popup-wrap journey-popup-wrap" role="dialog" aria-modal="true">
+          <div className="popup-card journey-popup-card">
             <h3>Journey Details</h3>
             <p><strong>Route:</strong> {active.routeFrom} to {active.routeTo}</p>
             <p><strong>Departure:</strong> {dateTime(active.departureTime)}</p>

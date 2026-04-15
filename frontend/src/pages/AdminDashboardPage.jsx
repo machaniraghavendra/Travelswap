@@ -8,6 +8,7 @@ import SessionPanel from '../components/SessionPanel';
 import AuditPanel from '../components/AuditPanel';
 import AdminOverviewPanel from '../components/AdminOverviewPanel';
 import DashboardNavbar from '../components/DashboardNavbar';
+import ToastNotifications from '../components/ToastNotifications';
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ export default function AdminDashboardPage() {
   const [busyKey, setBusyKey] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [toasts, setToasts] = useState([]);
 
   const refreshDashboard = useCallback(async () => {
     const [summaryData, overviewData, providerData, notificationData, sessionData] = await Promise.all([
@@ -110,6 +112,18 @@ export default function AdminDashboardPage() {
     }
   };
 
+  useEffect(() => {
+    if (!message) return;
+    setToasts((prev) => [...prev, { id: `${Date.now()}-${Math.random()}`, type: 'success', message }]);
+    setMessage('');
+  }, [message]);
+
+  useEffect(() => {
+    if (!error) return;
+    setToasts((prev) => [...prev, { id: `${Date.now()}-${Math.random()}`, type: 'error', message: error }]);
+    setError('');
+  }, [error]);
+
   return (
     <div className="app-shell">
       <DashboardNavbar
@@ -121,10 +135,6 @@ export default function AdminDashboardPage() {
       />
 
       <SummaryCards summary={summary} />
-
-      {(message || error) && (
-        <div className={error ? 'banner error' : 'banner success'}>{error || message}</div>
-      )}
 
       <main className="layout">
         <section className="left-col">
@@ -148,6 +158,7 @@ export default function AdminDashboardPage() {
           />
         </section>
       </main>
+      <ToastNotifications toasts={toasts} onDismiss={(id) => setToasts((prev) => prev.filter((item) => item.id !== id))} />
     </div>
   );
 }

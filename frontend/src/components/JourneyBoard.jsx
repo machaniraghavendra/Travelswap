@@ -176,6 +176,9 @@ export default function JourneyBoard({ journeys, onBook, busyKey, filters, setFi
   const fromOptions = useMemo(() => locations.filter((location) => location !== filters.routeTo), [locations, filters.routeTo]);
   const toOptions = useMemo(() => locations.filter((location) => location !== filters.routeFrom), [locations, filters.routeFrom]);
   const minJourneyDate = useMemo(() => todayLocalDate(), []);
+  const clearSearchFilters = () => {
+    setFilters({ routeFrom: '', routeTo: '', journeyDate: '' });
+  };
   const swapRouteFilters = () => {
     setFilters((prev) => ({
       ...prev,
@@ -295,6 +298,7 @@ export default function JourneyBoard({ journeys, onBook, busyKey, filters, setFi
           </select>
           <button type="button" className="swap-icon-btn" onClick={swapRouteFilters} aria-label="Swap From and To" title="Swap From and To">
             ↔
+           {/* <svg viewBox="-7 -7 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M21 7.5L8 7.5M21 7.5L16.6667 3M21 7.5L16.6667 12" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M4 16.5L17 16.5M4 16.5L8.33333 21M4 16.5L8.33333 12" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg> */}
           </button>
           <select value={filters.routeTo} onChange={(event) => setFilters((prev) => ({ ...prev, routeTo: event.target.value, routeFrom: prev.routeFrom === event.target.value ? '' : prev.routeFrom }))}>
             <option value="">To city</option>
@@ -309,6 +313,9 @@ export default function JourneyBoard({ journeys, onBook, busyKey, filters, setFi
           value={filters.journeyDate || ''}
           onChange={(event) => setFilters((prev) => ({ ...prev, journeyDate: event.target.value }))}
         />
+        <div className="filters-actions">
+          <button type="button" className="subtle-button" onClick={clearSearchFilters}>Clear</button>
+        </div>
       </div>
 
       {!hasSearch && <p className="empty">Search using From, To, and Date to view available buses and seats.</p>}
