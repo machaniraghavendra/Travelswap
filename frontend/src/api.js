@@ -1,6 +1,6 @@
 import { clearTokens, getAccessToken, getRefreshToken, setTokens } from './authStorage';
 
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = 'https://travelswap.onrender.com/api';
 const REQUEST_TIMEOUT_MS = Number(import.meta.env.VITE_API_TIMEOUT_MS || 15000);
 let refreshInFlight = null;
 
